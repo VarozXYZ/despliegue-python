@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Contraseñas Seguras</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2rem;
+            font-weight: 300;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: white;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .range-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .range-value {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-weight: bold;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #667eea;
+        }
+
+        .checkbox-item label {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .password-result {
+            margin-top: 25px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: none;
+        }
+
+        .password-display {
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            word-break: break-all;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .error {
+            color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 25px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Generador de Contraseñas</h1>
+        
+        <form id="passwordForm">
+            <div class="form-group">
+                <label for="length">Longitud de la contraseña:</label>
+                <div class="range-container">
+                    <input type="range" id="length" min="4" max="128" value="12">
+                    <span class="range-value" id="lengthValue">12</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Tipos de caracteres:</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="uppercase" checked>
+                        <label for="uppercase">Mayúsculas (A-Z)</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="lowercase" checked>
+                        <label for="lowercase">Minúsculas (a-z)</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="numbers" checked>
+                        <label for="numbers">Números (0-9)</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="symbols" checked>
+                        <label for="symbols">Símbolos (!@#$%...)</label>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn" id="generateBtn">
+                Generar Contraseña Segura
+            </button>
+        </form>
+
+        <div id="passwordResult" class="password-result">
+            <div id="passwordDisplay" class="password-display"></div>
+            <button type="button" class="copy-btn" id="copyBtn">
+                📋 Copiar al Portapapeles
+            </button>
+        </div>
+
+        <div id="errorMessage" class="error" style="display: none;"></div>
+    </div>
+
+    <script>
+        const lengthSlider = document.getElementById('length');
+        const lengthValue = document.getElementById('lengthValue');
+        const form = document.getElementById('passwordForm');
+        const generateBtn = document.getElementById('generateBtn');
+        const passwordResult = document.getElementById('passwordResult');
+        const passwordDisplay = document.getElementById('passwordDisplay');
+        const copyBtn = document.getElementById('copyBtn');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // Actualizar valor del slider
+        lengthSlider.addEventListener('input', function() {
+            lengthValue.textContent = this.value;
+        });
+
+        // Generar contraseña
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                length: parseInt(lengthSlider.value),
+                uppercase: document.getElementById('uppercase').checked,
+                lowercase: document.getElementById('lowercase').checked,
+                numbers: document.getElementById('numbers').checked,
+                symbols: document.getElementById('symbols').checked
+            };
+
+            try {
+                generateBtn.textContent = 'Generando...';
+                form.classList.add('loading');
+                errorMessage.style.display = 'none';
+
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    passwordDisplay.textContent = data.password;
+                    passwordResult.style.display = 'block';
+                } else {
+                    throw new Error(data.error || 'Error al generar la contraseña');
+                }
+
+            } catch (error) {
+                errorMessage.textContent = error.message;
+                errorMessage.style.display = 'block';
+                passwordResult.style.display = 'none';
+            } finally {
+                generateBtn.textContent = 'Generar Contraseña Segura';
+                form.classList.remove('loading');
+            }
+        });
+
+        // Copiar al portapapeles
+        copyBtn.addEventListener('click', async function() {
+            try {
+                await navigator.clipboard.writeText(passwordDisplay.textContent);
+                copyBtn.textContent = '✅ Copiado!';
+                setTimeout(() => {
+                    copyBtn.textContent = '📋 Copiar al Portapapeles';
+                }, 2000);
+            } catch (error) {
+                // Fallback para navegadores que no soportan clipboard API
+                const textArea = document.createElement('textarea');
+                textArea.value = passwordDisplay.textContent;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                copyBtn.textContent = '✅ Copiado!';
+                setTimeout(() => {
+                    copyBtn.textContent = '📋 Copiar al Portapapeles';
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+</html>
